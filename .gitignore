@@ -56,3 +56,7 @@ fabric.properties
 dist
 *.egg-info
 MANIFEST
+
+.venv
+
+.vscode/

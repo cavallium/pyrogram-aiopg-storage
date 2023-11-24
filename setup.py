@@ -6,6 +6,9 @@ here = pathlib.Path(__file__).parent
 init = here / "pyrogram_aiopg_storage" / "__init__.py"
 readme_path = here / "README.md"
 
+with open("requirements.txt", encoding="utf-8") as r:
+    requires = [i.strip() for i in r]
+
 with init.open() as fp:
     try:
         version = re.findall(r"^__version__ = '([^']+)'$", fp.read(), re.M)[0]
@@ -36,5 +39,6 @@ setup(
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
     ],
-    python_requires='>=3.6.0'
+    python_requires='>=3.6.0',
+    install_requires=requires
 )
