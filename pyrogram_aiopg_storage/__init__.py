@@ -64,7 +64,7 @@ class PostgreSQLStorage(Storage):
     >>> from pyrogram import Client
     >>>
     >>> db_pool = await aiopg.sa.create_engine(...)
-    >>> session = PostgreSQLStorage(db_pool=db_pool, user_id=..., phone=...)
+    >>> session = PostgreSQLStorage(db_pool=db_pool, user_id=..., session_unique_name=...)
     >>> pyrogram = Client(session_name=session)
     >>> await pyrogram.connect()
     >>> ...
@@ -75,16 +75,12 @@ class PostgreSQLStorage(Storage):
 
     def __init__(self,
                  db_pool: Engine,
-                 user_id: int,
-                 phone: str):
+                 session_unique_name: str):
         """
         :param db_pool: prepared aiopg database pool
-        :param user_id: application user identifier
-        :param phone: telegram session phone
+        :param session_unique_name: telegram session phone
         """
-        # normalize input phone and build a unique suffix id which will be used for our tables
-        normalized_phone = ''.join([x for x in phone if x in DIGITS])
-        self._session_id = f'{user_id}_{normalized_phone}'
+        self._session_id = f'{session_unique_name}'
         self._session_data = None
         self._pool: Engine = db_pool
 

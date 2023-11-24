@@ -18,8 +18,8 @@ from pyrogram import Client
 from pyrogram_aiopg_storage import PostgreSQLStorage
 
 db_pool = await aiopg.sa.create_engine(...)
-session = PostgreSQLStorage(db_pool=db_pool, user_id=..., phone=...)
-pyrogram = Client(session_name=session)
+session = PostgreSQLStorage(db_pool=db_pool, session_unique_name=...)
+pyrogram = Client(session)
 await pyrogram.connect()
 
 ```
