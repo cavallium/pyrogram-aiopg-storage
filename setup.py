@@ -22,9 +22,9 @@ setup(
     description='aiopg storage for pyrogram',
     long_description=README,
     long_description_content_type='text/markdown',
-    author='Dmytro Smyk',
+    author='Dmytro Smyk, Andrea Cavalli',
     author_email='porovozls@gmail.com',
-    url='https://github.com/parikls/pyrogram-aiopg-storage',
+    url='https://github.com/cavallium/pyrogram-aiopg-storage',
     packages=["pyrogram_aiopg_storage", ],
     classifiers=[
         "Operating System :: OS Independent",

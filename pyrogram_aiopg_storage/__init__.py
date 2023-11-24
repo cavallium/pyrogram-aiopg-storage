@@ -1,5 +1,5 @@
-__author__ = 'Dmytro Smyk'
-__version__ = '0.3'
+__author__ = 'Dmytro Smyk, Andrea Cavalli'
+__version__ = '0.4'
 
 import time
 from enum import Enum
@@ -97,6 +97,7 @@ class PostgreSQLStorage(Storage):
             f'pyrogram_session_{self._session_id}', self._meta,
 
             Column('dc_id', BIGINT, primary_key=True),
+            Column('api_id', BIGINT),
             Column('test_mode', Boolean),
             Column('auth_key', BYTEA),
             Column('date', BIGINT, nullable=False),
@@ -159,7 +160,7 @@ class PostgreSQLStorage(Storage):
         await conn.execute(str(CreateTable(self._t_peers)))
         await conn.execute(str(CreateIndex(self._i_peers_username)))
         await conn.execute(str(CreateIndex(self._i_peers_phone_number)))
-        await conn.execute(insert(self._t_session).values([2, None, None, 0, None, None]))
+        await conn.execute(insert(self._t_session).values([2, None, None, None, 0, None, None]))
 
     async def save(self):
         """ On save we update the date """
@@ -274,6 +275,9 @@ class PostgreSQLStorage(Storage):
 
     async def dc_id(self, value: int = object):
         return await self._accessor('dc_id', value)
+
+    async def api_id(self, value: int = object):
+        return await self._accessor('api_id', value)
 
     async def test_mode(self, value: bool = object):
         return await self._accessor('test_mode', value)
