@@ -212,6 +212,8 @@ class PostgreSQLStorage(Storage):
             await conn.execute(final_query)
 
     async def get_peer_by_id(self, peer_id: int):
+        if isinstance(peer_id, str):
+            raise KeyError(f"ID not found: {peer_id}")
         query = (
             select([self._t_peers.c.id, self._t_peers.c.access_hash, self._t_peers.c.type])
             .where(self._t_peers.c.id == peer_id)
