@@ -75,7 +75,8 @@ class PostgreSQLStorage(Storage):
 
     def __init__(self,
                  db_pool: Engine,
-                 session_unique_name: str):
+                 session_unique_name: str,
+                 save_user_peers: bool):
         """
         :param db_pool: prepared aiopg database pool
         :param session_unique_name: telegram session phone
@@ -83,6 +84,7 @@ class PostgreSQLStorage(Storage):
         self._session_id = f'{session_unique_name}'
         self._session_data = None
         self._pool: Engine = db_pool
+        self._save_user_peers = save_user_peers
 
         super().__init__(name=self._session_id)
 
@@ -185,6 +187,8 @@ class PostgreSQLStorage(Storage):
 
         # deduplicate peers to avoid possible `CardinalityViolation` error
         for peer in peers:
+            if not self._save_user_peers and peer[2] == "user":
+                continue
             peer_id, *_ = peer
             if peer_id in seen_ids:
                 continue
@@ -193,23 +197,24 @@ class PostgreSQLStorage(Storage):
             deduplicated_peers.append(tuple(chain(peer, (now,))))
 
         # construct insert query
-        insert_query = insert(self._t_peers).values(deduplicated_peers)
-        final_query = (
-            insert_query.on_conflict_do_update(
-                constraint=self._t_peers.primary_key.name,
-                set_={
-                    'access_hash': insert_query.excluded.access_hash,
-                    'username': insert_query.excluded.username,
-                    'phone_number': insert_query.excluded.phone_number,
-                    'last_update_on': insert_query.excluded.last_update_on
-                }
+        if deduplicated_peers:
+            insert_query = insert(self._t_peers).values(deduplicated_peers)
+            final_query = (
+                insert_query.on_conflict_do_update(
+                    constraint=self._t_peers.primary_key.name,
+                    set_={
+                        'access_hash': insert_query.excluded.access_hash,
+                        'username': insert_query.excluded.username,
+                        'phone_number': insert_query.excluded.phone_number,
+                        'last_update_on': insert_query.excluded.last_update_on
+                    }
+                )
+                .compile(dialect=psql_dialect())
+                .statement
             )
-            .compile(dialect=psql_dialect())
-            .statement
-        )
 
-        async with self._pool.acquire() as conn:
-            await conn.execute(final_query)
+            async with self._pool.acquire() as conn:
+                await conn.execute(final_query)
 
     async def get_peer_by_id(self, peer_id: int):
         if isinstance(peer_id, str):
